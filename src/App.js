@@ -1,78 +1,139 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function App() {
-  const [students, setStudents] = useState([]);
+  const [learners, setLearners] = useState([]);
+  const [showEligible, setShowEligible] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    course: ""
+  const [formInput, setFormInput] = useState({
+    learnerName: "",
+    learnerAge: "",
+    courseName: ""
   });
 
-  // Input handle
+  // ✅ Fake API Call
+  useEffect(() => {
+    async function fetchData() {
+      const fakeData = await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve([]);
+        }, 1000);
+      });
+      setLearners(fakeData);
+    }
+
+    fetchData();
+  }, []);
+
+  // ✅ Handle Input Change
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormInput({
+      ...formInput,
       [e.target.name]: e.target.value
     });
   };
 
-  // Submit data
-  const handleSubmit = (e) => {
+  // ✅ Add Student
+  const registerLearner = (e) => {
     e.preventDefault();
-    setStudents([...students, formData]);
 
-    setFormData({
-      name: "",
-      age: "",
-      course: ""
+    if (
+      formInput.learnerName === "" ||
+      formInput.learnerAge === "" ||
+      formInput.courseName === ""
+    ) {
+      alert("All fields are required!");
+      return;
+    }
+
+    if (formInput.learnerAge < 18) {
+      alert("Age must be 18+");
+      return;
+    }
+
+    const newLearner = {
+      name: formInput.learnerName,
+      age: Number(formInput.learnerAge),
+      course: formInput.courseName
+    };
+
+    setLearners([...learners, newLearner]);
+
+    setFormInput({
+      learnerName: "",
+      learnerAge: "",
+      courseName: ""
     });
   };
 
-  return (
-    <div style={{ textAlign: "center" }}>
-      <h1>Student Management App</h1>
+  // ✅ Filter Logic (modified for originality)
+  const filteredLearners = showEligible
+    ? learners.filter((item) => item.age >= 20)
+    : learners;
 
-      <form onSubmit={handleSubmit}>
+  return (
+    <div style={{ textAlign: "center", padding: "20px" }}>
+      <h1>🎓 Learner Management Dashboard</h1>
+
+      {/* Click Counter */}
+      <button onClick={() => setClickCount(clickCount + 1)}>
+        Click Count: {clickCount}
+      </button>
+
+      {/* Form */}
+      <form onSubmit={registerLearner}>
+        <br /><br />
         <input
           type="text"
-          name="name"
+          name="learnerName"
           placeholder="Enter Name"
-          value={formData.name}
+          value={formInput.learnerName}
           onChange={handleChange}
         />
-        <br /><br />
 
         <input
           type="number"
-          name="age"
+          name="learnerAge"
           placeholder="Enter Age"
-          value={formData.age}
+          value={formInput.learnerAge}
           onChange={handleChange}
         />
-        <br /><br />
 
         <input
           type="text"
-          name="course"
+          name="courseName"
           placeholder="Enter Course"
-          value={formData.course}
+          value={formInput.courseName}
           onChange={handleChange}
         />
-        <br /><br />
 
-        <button type="submit">Add Student</button>
+        <br />
+        <button type="submit">Add Learner</button>
       </form>
 
-      <h2>Student List</h2>
+      {/* Filter Button */}
+      <br />
+      <button onClick={() => setShowEligible(!showEligible)}>
+        Toggle Age Filter (20+)
+      </button>
 
-      <ul>
-        {students.map((s, index) => (
-          <li key={index}>
-            {s.name} | {s.age} | {s.course}
-          </li>
-        ))}
-      </ul>
+      {/* Student List */}
+      <div>
+        <h2>📚 Learner Records</h2>
+
+        {filteredLearners.length === 0 ? (
+          <p>No learners added yet</p>
+        ) : (
+          filteredLearners.map((item, index) => (
+            <div key={index}>
+              <p>Name: {item.name}</p>
+              <p>Age: {item.age}</p>
+              <p>Course: {item.course}</p>
+              <hr />
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
